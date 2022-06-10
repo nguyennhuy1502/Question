@@ -11,7 +11,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-public interface IAccountService {
+public interface IAccountService{
 
     List<Account> finAll();
 

@@ -127,4 +127,26 @@ public class AccountService implements IAccountService {
         return passwordEncoder.matches(oldPassword, account.getPassword());
     }
 
+//    @Override
+//    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+//        Account account = repository.findByEmail(username);
+//        if (account == null){
+//            throw new UsernameNotFoundException("No User Found");
+//        }
+//        return new org.springframework.security.core.userdetails.User(account.getUsername(),
+//                account.getPassword(),
+//                account.isEnabled(),
+//                true,
+//                true,
+//                true,
+//                getAuthorities(List.of(account.getRole())));
+//    }
+//
+//    private Collection<? extends GrantedAuthority> getAuthorities(List<String> roles) {
+//        List<GrantedAuthority> authorities = new ArrayList<>();
+//        for (String role: roles){
+//            authorities.add(new SimpleGrantedAuthority(role));
+//        }
+//        return authorities;
+//    }
 }
