@@ -35,4 +35,18 @@ public class Account {
 
     @Column(name="enabled")
     private boolean enabled = false;
+
+    public Account() {
+    }
+
+    public Account(int id, String firstName, String lastName, String email, String username, String password, String role, boolean enabled) {
+        this.id = id;
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.email = email;
+        this.username = username;
+        this.password = password;
+        this.role = role;
+        this.enabled = enabled;
+    }
 }

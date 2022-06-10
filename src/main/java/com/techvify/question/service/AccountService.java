@@ -2,15 +2,22 @@ package com.techvify.question.service;
 
 import com.techvify.question.DTO.RegistrationAccountDTO;
 import com.techvify.question.entity.Account;
+import com.techvify.question.entity.PasswordResetToken;
 import com.techvify.question.entity.VerificationToken;
 import com.techvify.question.repository.IAccountRepository;
+import com.techvify.question.repository.IPasswordResetTokenRepository;
 import com.techvify.question.repository.IVerificationTokenRepository;
 import com.techvify.question.service.isevice.IAccountService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class AccountService implements IAccountService {
@@ -21,6 +28,10 @@ public class AccountService implements IAccountService {
     private IVerificationTokenRepository verificationTokenRepository;
     @Autowired
     private PasswordEncoder passwordEncoder;
+
+    @Autowired
+    private IPasswordResetTokenRepository passwordResetTokenRepository;
+
     @Override
     public List<Account> finAll() {
         return repository.findAll();
@@ -36,7 +47,7 @@ public class AccountService implements IAccountService {
         account.setPassword(passwordEncoder.encode(registrationAccountDTO.getPassword()));
         account.setRole("USER");
 
-         repository.save(account);
+        repository.save(account);
         return account;
     }
 
@@ -45,4 +56,75 @@ public class AccountService implements IAccountService {
         VerificationToken verificationToken = new VerificationToken(account, token);
         verificationTokenRepository.save(verificationToken);
     }
+
+    @Override
+    public String validateVerificationToken(String token) {
+        VerificationToken verificationToken = verificationTokenRepository.findByToken(token);
+        if (verificationToken == null) {
+            return "invalid";
+
+        }
+        Account account = verificationToken.getAccount();
+        Calendar calendar = Calendar.getInstance();
+        if ((verificationToken.getExpirationTime().getTime() - calendar.getTime().getTime()) <= 0) {
+            verificationTokenRepository.delete(verificationToken);
+            return "expired";
+        }
+        account.setEnabled(true);
+        repository.save(account);
+        return "valid";
+    }
+
+    @Override
+    public VerificationToken generateNewVerificationToken(String oldToken) {
+        VerificationToken verificationToken = verificationTokenRepository.findByToken(oldToken);
+        verificationToken.setToken(UUID.randomUUID().toString());
+        verificationTokenRepository.save(verificationToken);
+        return verificationToken;
+    }
+
+    @Override
+    public Account findUserByEmail(String email) {
+        return repository.findByEmail(email);
+    }
+
+    @Override
+    public void createPasswordResetTokenForAccount(Account account, String token) {
+        PasswordResetToken passwordResetToken = new PasswordResetToken(account, token);
+        passwordResetTokenRepository.save(passwordResetToken);
+    }
+
+    @Override
+    public String validatePasswordResetToken(String token) {
+        PasswordResetToken passwordResetToken = passwordResetTokenRepository.findByToken(token);
+        if (passwordResetToken == null) {
+            return "invalid";
+
+        }
+        Account account = passwordResetToken.getAccount();
+        Calendar calendar = Calendar.getInstance();
+        if ((passwordResetToken.getExpirationTime().getTime() - calendar.getTime().getTime()) <= 0) {
+            passwordResetTokenRepository.delete(passwordResetToken);
+            return "expired";
+        }
+
+        return "valid";
+    }
+
+    @Override
+    public Optional<Account> getUserByPasswordResetToken(String token) {
+        return Optional.ofNullable(passwordResetTokenRepository.findByToken(token).getAccount());
+    }
+
+    @Override
+    public void changePassword(Account account, String newPassword) {
+        account.setPassword(passwordEncoder.encode(newPassword));
+        repository.save(account);
+    }
+
+    @Override
+    public boolean checkIfValidOldPassword(Account account, String oldPassword) {
+        return passwordEncoder.matches(oldPassword, account.getPassword());
+    }
+
 }

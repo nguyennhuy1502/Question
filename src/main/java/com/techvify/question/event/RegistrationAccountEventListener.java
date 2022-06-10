@@ -19,7 +19,7 @@ public class RegistrationAccountEventListener implements ApplicationListener<Reg
         String token = UUID.randomUUID().toString();
         accountService.saveVerificationTokenForAccount(token, account);
 
-        String url = event.getApplicationUrl() + "verifyRegistration?token="+token;
+        String url = event.getApplicationUrl() + "/api/v1/verifyRegistration?token="+token;
         log.info("Click the link to verify your account: {}", url);
     }
 }
