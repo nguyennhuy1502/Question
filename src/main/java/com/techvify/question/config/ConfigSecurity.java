@@ -3,6 +3,7 @@ package com.techvify.question.config;
 import org.apache.tomcat.util.codec.binary.Base64;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
@@ -37,7 +38,11 @@ public class ConfigSecurity{
                 .disable()
                 .authorizeHttpRequests()
                 .antMatchers(WHITE_LIST_URLS).permitAll()
-                .antMatchers((WHITE_LIST_URLS_ADMIN)).hasAuthority("ADMIN");
+//                .antMatchers((WHITE_LIST_URLS_ADMIN)).hasAuthority("ADMIN")
+                .antMatchers("/api/**").authenticated()
+                .and()
+                .oauth2Login(oauth2login->oauth2login.loginPage("/oauth2/authorization/api-client-oidc"))
+                .oauth2Client(Customizer.withDefaults());
 
         return  http.build();
     }

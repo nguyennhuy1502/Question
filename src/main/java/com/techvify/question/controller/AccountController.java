@@ -17,7 +17,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/api/v1")
+@RequestMapping
 @Slf4j
 public class AccountController {
     @Autowired
@@ -26,7 +26,7 @@ public class AccountController {
     @Autowired
     private ApplicationEventPublisher publisher;
 
-    @GetMapping("/all")
+    @GetMapping("/api/all")
     public List<Account> finAll() {
         return service.finAll();
     }
@@ -100,7 +100,7 @@ public class AccountController {
 
 
     private void resendVerifyTokenMail(Account account, String applicationUrl, VerificationToken verificationToken) {
-        String url = applicationUrl + "/api/v1/verifyRegistration?token="+verificationToken.getToken();
+        String url = applicationUrl + "/verifyRegistration?token="+verificationToken.getToken();
         log.info("Click the link to verify your account: {}", url);
     }
 
@@ -109,7 +109,7 @@ public class AccountController {
     }
 
     private String passwordResetTokenMail(Account account, String applicationUrl, String token) {
-        String url = applicationUrl + "/api/v1/savePassword?token="+token;
+        String url = applicationUrl + "/savePassword?token="+token;
         log.info("Click the link to reset your Password: {}", url);
         return url;
     }
